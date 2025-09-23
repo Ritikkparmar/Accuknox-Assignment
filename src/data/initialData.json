@@ -1,0 +1,40 @@
+{
+	"categories": [
+		{
+			"id": "cspm-executive",
+			"name": "CSPM Executive Dashboard",
+			"widgets": [
+				{
+					"id": "widget-1",
+					"name": "Cloud Accounts",
+					"text": "Total: 2 (1 Connected, 1 Not Connected)",
+					"categoryId": "cspm-executive"
+				}
+			]
+		},
+		{
+			"id": "security-overview",
+			"name": "Security Overview",
+			"widgets": [
+				{
+					"id": "widget-2",
+					"name": "Active Alerts",
+					"text": "7 critical, 12 high, 34 medium",
+					"categoryId": "security-overview"
+				}
+			]
+		},
+		{
+			"id": "compliance-status",
+			"name": "Compliance Status",
+			"widgets": [
+				{
+					"id": "widget-3",
+					"name": "CIS Benchmarks",
+					"text": "Passed: 85%, Failed: 15%",
+					"categoryId": "compliance-status"
+				}
+			]
+		}
+	]
+}
