@@ -1,5 +1,5 @@
 import { Filter, Search, Settings, User2, X, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import WidgetCard from "./WidgetCard";
 import DonutChart from "./DonutChart";
 import BarChart from "./BarChart";
@@ -8,7 +8,7 @@ interface TemplateDef {
 	id: string;
 	title: string;
 	category: string;
-	render: () => JSX.Element;
+	render: () => ReactNode;
 }
 
 interface Instance {
@@ -213,6 +213,30 @@ export default function DashboardV2() {
 		setFormOpen(false);
 	}
 
+	// Right-side category manager (slide-over)
+	const [isPanelOpen, setPanelOpen] = useState(false);
+	const [panelCategory, setPanelCategory] = useState<string>("CSPM Executive Dashboard");
+	const [panelSearch, setPanelSearch] = useState("");
+
+	function openPanel(category: string) {
+		setPanelCategory(category);
+		setPanelSearch("");
+		setPanelOpen(true);
+	}
+
+	function isTemplateEnabled(tid: string) {
+		return instances.some(i => i.templateId === tid);
+	}
+	function toggleTemplate(tid: string) {
+		const enabled = isTemplateEnabled(tid);
+		if (enabled) {
+			// remove all instances of this template
+			setInstances(prev => prev.filter(i => i.templateId !== tid));
+		} else {
+			setInstances(prev => [...prev, { id: crypto.randomUUID(), templateId: tid }]);
+		}
+	}
+
 	const categories = [
 		"CSPM Executive Dashboard",
 		"CWPP Dashboard",
@@ -229,7 +253,7 @@ export default function DashboardV2() {
 						<span>›</span>
 						<span className="font-medium text-gray-800">Dashboard V2</span>
 					</div>
-					<div className="relative w/full max-w-xl">
+					<div className="relative w-full max-w-xl">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 						<input
 							value={query}
@@ -258,12 +282,20 @@ export default function DashboardV2() {
 					<section key={cat} className="space-y-3">
 						<div className="flex items-center justify-between">
 							<h2 className="text-base font-semibold text-gray-800">{cat}</h2>
-							<button
-								onClick={() => openForm(cat)}
-								className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
-							>
-								<Plus className="h-4 w-4" /> Add Widget
-							</button>
+							<div className="flex items-center gap-2">
+								<button
+									onClick={() => openForm(cat)}
+									className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
+								>
+									<Plus className="h-4 w-4" /> Add Widget
+								</button>
+								<button
+									onClick={() => openPanel(cat)}
+									className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
+								>
+									Manage
+								</button>
+							</div>
 						</div>
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 							{instances
@@ -384,6 +416,44 @@ export default function DashboardV2() {
 							</div>
 						</form>
 					</div>
+				</div>
+			)}
+
+			{/* Slide-over Category Manager */}
+			{isPanelOpen && (
+				<div className="fixed inset-0 z-50 flex">
+					<div className="flex-1 bg-black/40" onClick={() => setPanelOpen(false)} />
+					<aside className="h-full w-full max-w-xl bg-white shadow-xl">
+						<div className="flex items-center justify-between border-b px-4 py-3">
+							<h3 className="text-sm font-semibold">Manage Widgets</h3>
+							<button onClick={() => setPanelOpen(false)} className="rounded p-1 hover:bg-gray-100"><X className="h-5 w-5" /></button>
+						</div>
+						<div className="flex items-center gap-2 border-b px-4 py-2">
+							{categories.map(cat => (
+								<button key={cat} onClick={() => setPanelCategory(cat)} className={`rounded-md px-3 py-1 text-xs font-medium ${panelCategory===cat? 'bg-indigo-50 text-indigo-700 border border-indigo-200':'bg-gray-50 text-gray-600 border border-gray-200'}`}>{cat.split(' ')[0]}</button>
+							))}
+						</div>
+						<div className="p-4">
+							<div className="relative mb-3">
+								<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+								<input value={panelSearch} onChange={e=>setPanelSearch(e.target.value)} placeholder="Search widgets..." className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500" />
+							</div>
+							<ul className="space-y-2">
+								{templates.filter(t => t.category===panelCategory && t.title.toLowerCase().includes(panelSearch.toLowerCase())).map(t => {
+									const enabled = isTemplateEnabled(t.id);
+									return (
+										<li key={t.id} className="flex items-center justify-between rounded-lg border border-gray-200 p-2">
+											<div>
+												<p className="text-sm font-medium">{t.title}</p>
+												<p className="text-xs text-gray-500">{t.category}</p>
+											</div>
+											<button onClick={()=>toggleTemplate(t.id)} className={`rounded-md px-3 py-1 text-xs font-medium ${enabled? 'border border-red-200 text-red-600 hover:bg-red-50':'border border-indigo-200 text-indigo-700 hover:bg-indigo-50'}`}>{enabled? 'Remove':'Add'}</button>
+										</li>
+									);
+								})}
+							</ul>
+						</div>
+					</aside>
 				</div>
 			)}
 		</div>

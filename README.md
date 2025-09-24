@@ -1,73 +1,140 @@
-# React + TypeScript + Vite
+# React Dashboard (Vite + TypeScript + Tailwind + Zustand)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production‑ready, componentized dashboard that supports dynamic widgets, per‑section management, charts, search, and local persistence.
 
-Currently, two official plugins are available:
+## Tech Stack
+- Vite + React + TypeScript
+- TailwindCSS (utility-first styling)
+- Zustand (state and UI management with localStorage persistence)
+- Recharts (donut and bar charts)
+- Lucide React (icons)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Key Features
 
-## React Compiler
+### 1) Sections (Categories)
+The dashboard is organized into categories (sections):
+- CSPM Executive Dashboard
+- CWPP Dashboard
+- Registry Scan
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Each section renders a grid of “cards” (widgets). The grid is responsive: 1–3 columns depending on viewport.
 
-## Expanding the ESLint configuration
+### 2) Widget Cards
+Each widget is rendered inside a reusable `WidgetCard` component with:
+- Title (top-left)
+- Optional “Add” button (duplicates the card)
+- Remove (X) button (removes that card instance only)
+- Body content (chart or custom text)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+CSPM cards display donut charts with legends; Registry Scan cards display bar charts and show a small category badge.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 3) Add Widget (Modal)
+Each section header has an “Add Widget” button that opens a modal to create a new custom widget:
+- Select Category (section where the card will appear)
+- Widget Title
+- Widget Text (arbitrary content for assignment/demo)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+On submit:
+- A new dynamic template is created
+- A new card instance is appended to the selected section
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 4) Manage Widgets (Right‑Side Panel)
+Each section header also has a “Manage” button that opens a slide‑over panel with:
+- Category tabs (CSPM / CWPP / Registry)
+- Search input to filter widgets by title
+- List of widgets for that category with Add/Remove toggles
+  - Add: appends one instance of that widget to the section
+  - Remove: removes all instances of that widget from the section
+
+This is the category‑wise control you asked for earlier, with search and add/remove in one place.
+
+### 5) Per‑Card Remove (X)
+Every card instance has its own X button to remove that single instance from the section without affecting other instances or templates.
+
+### 6) Global Search (Header)
+Top header includes a centered search input (placeholder). It’s a hook-in point to wire up page‑level filtering if needed; currently the full content is visible while the category manager has its own real filtering.
+
+### 7) Persistence
+Zustand store persists the primary dashboard state (categories/widgets) to `localStorage`, so the dashboard state survives reloads.
+
+### 8) Accessibility & UX
+- Keyboard‑reachable buttons
+- ARIA roles on dialogs
+- Clear focus styles
+- Consistent spacing/typography
+
+## Project Structure
+```
+src/
+  components/
+    Dashboard.tsx               # initial dashboard (store-based)
+    CategorySection.tsx         # category renderer for initial dashboard
+    WidgetCard.tsx              # reusable card for initial dashboard
+    AddWidgetModal.tsx          # add widget modal for initial dashboard
+    SearchBar.tsx               # search input for initial dashboard
+    CategoryManager.tsx         # bulk manager (initial dashboard)
+    v2/
+      Dashboard.tsx             # enhanced dashboard (templates + instances)
+      WidgetCard.tsx            # v2 reusable card
+      DonutChart.tsx            # donut chart (Recharts)
+      BarChart.tsx              # horizontal bars (Recharts)
+  store/
+    dashboardStore.ts           # Zustand stores (dashboard + UI)
+  types/
+    dashboard.ts
+  data/
+    initialData.json
+  App.tsx
+  main.tsx
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Notes:
+- `components/v2/Dashboard.tsx` implements the requested UX: per‑section Add Widget modal, right‑side Manage panel with category tabs + search, per‑card remove, legends, badges, and responsive grid.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Running the App
+```bash
+# install deps
+npm i
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# start dev server
+npm run dev
+
+# build for production
+npm run build
+
+# preview production build
+npm run preview
 ```
+
+## How It Works (v2)
+
+### Templates vs. Instances
+- Templates define how a type of widget looks (title, category, render function)
+- Instances reference a template and represent a real card on screen
+- “Add” on a card duplicates its instance (same template)
+- Modal “Add Widget” creates a new template (custom text) and one instance
+- Panel “Manage” toggles entire templates for a category (add one instance if missing; remove all instances when toggled off)
+
+### Important Components
+- `v2/Dashboard.tsx`:
+  - Maintains `templates`, `instances`
+  - Implements Add Widget modal + Manage slide‑over
+  - Renders category sections in a responsive grid
+- `v2/WidgetCard.tsx`: header (title, Add, Remove) and body
+- `v2/DonutChart.tsx` / `v2/BarChart.tsx`: charts powered by Recharts
+
+## Extending
+- Add a new static widget: push a new entry in `baseTemplates` in `v2/Dashboard.tsx`
+- Change chart data: edit the arrays near the top of `v2/Dashboard.tsx`
+- Customize styles: Tailwind classes throughout; tweak in component markup
+
+## Known Notes
+- Global header search is a placeholder; the right‑panel search is fully functional.
+- Charts use simplified types for broad compatibility across Recharts versions.
+
+## Troubleshooting
+- If types fail for Recharts, we intentionally relaxed the Pie `data` typing.
+- If the dev server warns about large chunks, this is a Vite advisory only; you can add code splitting if desired.
+
+---
+Built with ❤️ using React, Tailwind, Zustand, and Recharts.

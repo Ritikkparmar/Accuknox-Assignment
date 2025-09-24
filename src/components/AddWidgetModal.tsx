@@ -31,6 +31,11 @@ export default function AddWidgetModal() {
 			toast.error('Widget content is required');
 			return;
 		}
+		if (!categoryId) {
+			// Should not happen due to outer guard, but keeps TS happy
+			return;
+		}
+		// categoryId is guaranteed by guard above
 		addWidget(categoryId, { name: name.trim(), text: text.trim(), categoryId });
 		toast.success('Widget added');
 		close();

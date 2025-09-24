@@ -13,7 +13,7 @@ interface DashboardStoreState {
 
 export const useDashboardStore = create<DashboardStoreState>()(
 	persist(
-		(set, get) => ({
+		(set) => ({
 			categories: [],
 			searchQuery: '',
 			addWidget: (categoryId, widget) => {

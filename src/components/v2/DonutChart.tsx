@@ -20,7 +20,7 @@ export default function DonutChart({ data, total }: Props) {
 		<div className="h-52 w-full">
 			<ResponsiveContainer width="100%" height="100%">
 				<PieChart>
-					<Pie data={data} dataKey="value" nameKey="name" cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius}>
+					<Pie data={data as any} dataKey="value" nameKey="name" cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius}>
 						{data.map((entry, idx) => (
 							<Cell key={`cell-${idx}`} fill={entry.color} />
 						))}
@@ -29,7 +29,7 @@ export default function DonutChart({ data, total }: Props) {
 				</PieChart>
 			</ResponsiveContainer>
 			<div className="pointer-events-none select-none text-center" style={{ marginTop: -120 }}>
-				<div className="text-xl font-bold text-gray-800">{total}</div>
+				<div className=" text-xl font-bold text-gray-800">{total}</div>
 				<div className="text-xs text-gray-500">Total</div>
 			</div>
 		</div>
